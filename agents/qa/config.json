@@ -1,0 +1,14 @@
+{
+  "id": "qa-agent",
+  "name": "🧪 QA Agent",
+  "base_model": "gemini-2.0-flash-lite",
+  "description": "Senior QA Engineer. Test strategy, pytest suites, edge cases, coverage analysis, and quality gates.",
+  "params": {
+    "temperature": 0.2,
+    "top_p": 0.9,
+    "max_tokens": 4096
+  },
+  "tags": ["qa", "testing", "pytest", "python", "quality"],
+  "knowledge_collections": ["project-core"],
+  "tools": ["web_search", "file_reader"]
+}

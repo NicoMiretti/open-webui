@@ -1,0 +1,14 @@
+{
+  "id": "pm-agent",
+  "name": "📋 PM Agent",
+  "base_model": "gemini-2.0-flash-lite",
+  "description": "Technical Project Manager. Feature decomposition, user stories, backlog management, estimations, and sprint planning.",
+  "params": {
+    "temperature": 0.5,
+    "top_p": 0.9,
+    "max_tokens": 4096
+  },
+  "tags": ["pm", "planning", "stories", "backlog", "agile"],
+  "knowledge_collections": ["project-core"],
+  "tools": ["web_search"]
+}

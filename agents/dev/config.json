@@ -1,0 +1,14 @@
+{
+  "id": "dev-agent",
+  "name": "💻 Dev Agent",
+  "base_model": "gemini-2.0-flash-lite",
+  "description": "Senior Python/FastAPI developer. Production-ready code generation, review, refactor, and Git workflow.",
+  "params": {
+    "temperature": 0.2,
+    "top_p": 0.9,
+    "max_tokens": 4096
+  },
+  "tags": ["dev", "python", "fastapi", "backend", "frontend"],
+  "knowledge_collections": ["project-core"],
+  "tools": ["web_search", "file_reader"]
+}

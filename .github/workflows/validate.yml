@@ -1,0 +1,120 @@
+name: Validate OpenWebUI Config
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    name: Validate agents config
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate JSON configs
+        run: |
+          echo "=== Validando config.json de cada agente ==="
+          failed=0
+          for f in agents/*/config.json; do
+            echo -n "  $f ... "
+            if python3 -c "
+          import json, sys
+          data = json.load(open('$f'))
+          required = ['id', 'name', 'base_model', 'params']
+          missing = [k for k in required if k not in data]
+          if missing:
+              print(f'Faltan campos: {missing}', file=sys.stderr)
+              sys.exit(1)
+          print('OK')
+          "; then
+              echo "✅"
+            else
+              echo "❌"
+              failed=1
+            fi
+          done
+          exit $failed
+
+      - name: Validate system prompts not empty
+        run: |
+          echo "=== Validando system_prompt.md de cada agente ==="
+          failed=0
+          for f in agents/*/system_prompt.md; do
+            words=$(wc -w < "$f")
+            agent=$(dirname "$f" | xargs basename)
+            if [ "$words" -lt 100 ]; then
+              echo "  ❌ $f — muy corto ($words palabras, mínimo 100)"
+              failed=1
+            else
+              echo "  ✅ $agent ($words palabras)"
+            fi
+          done
+          exit $failed
+
+      - name: Check all agents have both files
+        run: |
+          echo "=== Verificando estructura de carpetas ==="
+          failed=0
+          for dir in agents/*/; do
+            agent=$(basename "$dir")
+            if [ ! -f "$dir/config.json" ]; then
+              echo "  ❌ $agent: falta config.json"
+              failed=1
+            fi
+            if [ ! -f "$dir/system_prompt.md" ]; then
+              echo "  ❌ $agent: falta system_prompt.md"
+              failed=1
+            fi
+            if [ "$failed" -eq 0 ]; then
+              echo "  ✅ $agent"
+            fi
+          done
+          exit $failed
+
+      - name: Validate JSON schema consistency
+        run: |
+          echo "=== Validando consistencia de IDs ==="
+          python3 - <<'EOF'
+          import json
+          from pathlib import Path
+
+          failed = False
+          for config_path in Path("agents").glob("*/config.json"):
+              data = json.loads(config_path.read_text())
+              folder = config_path.parent.name
+              config_id = data.get("id", "")
+              if not config_id:
+                  print(f"  ❌ {folder}: 'id' vacío en config.json")
+                  failed = True
+              else:
+                  print(f"  ✅ {folder} → id: {config_id}")
+
+          if failed:
+              raise SystemExit(1)
+          EOF
+
+  # Opcional: auto-deploy si tenés OPENWEBUI_URL y OPENWEBUI_TOKEN en GitHub Secrets
+  # deploy:
+  #   name: Deploy to OpenWebUI
+  #   needs: validate
+  #   runs-on: ubuntu-latest
+  #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-python@v5
+  #       with:
+  #         python-version: "3.12"
+  #     - run: pip install requests python-dotenv
+  #     - run: python3 scripts/openwebui_api.py import
+  #       env:
+  #         OPENWEBUI_URL: ${{ secrets.OPENWEBUI_URL }}
+  #         OPENWEBUI_TOKEN: ${{ secrets.OPENWEBUI_TOKEN }}
