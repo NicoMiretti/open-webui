@@ -1,7 +1,7 @@
 {
   "id": "architect-agent",
   "name": "🏗️ Architect Agent",
-  "base_model": "gemini-2.0-flash-lite",
+  "base_model": "gemini-3.1-flash-lite",
   "description": "Senior Software Architect. System design, ADRs, C4 diagrams, technical decisions and cross-cutting reviews.",
   "params": {
     "temperature": 0.2,
